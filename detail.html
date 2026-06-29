@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greatest Glory FC Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="assets/styles/main.css">
+</head>
+<body class="detail-body">
+  <div class="site-shell detail-shell">
+    <header class="site-header compact-header">
+      <a class="brand" href="index.html">
+        <img src="assets/images/logo.png" alt="Greatest Glory Football Club logo">
+        <span>
+          <strong>Greatest Glory FC</strong>
+          <small>Detail Viewer</small>
+        </span>
+      </a>
+      <nav class="primary-nav static-nav">
+        <a href="index.html">Home</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+    </header>
+
+    <main class="detail-main">
+      <section class="detail-hero">
+        <div class="section-chip">Record Detail</div>
+        <h1 id="detailTitle">Loading record...</h1>
+        <p id="detailMeta" class="hero-text"></p>
+      </section>
+
+      <section class="detail-panel">
+        <div id="detailBody" class="detail-body-copy"></div>
+        <div id="detailAsset" class="detail-asset"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="assets/scripts/config.js"></script>
+  <script src="assets/scripts/core.js"></script>
+  <script src="assets/scripts/detail.js"></script>
+</body>
+</html>

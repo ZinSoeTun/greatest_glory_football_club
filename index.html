@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greatest Glory Football Club</title>
+  <meta
+    name="description"
+    content="Greatest Glory Football Club is a rising community football club building a bold identity through discipline, youth growth, and matchday energy."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="assets/styles/main.css">
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Greatest Glory Football Club home">
+        <img src="assets/images/logo.png" alt="Greatest Glory Football Club logo">
+        <span>
+          <strong>Greatest Glory FC</strong>
+          <small>Rise With Purpose</small>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav id="primary-nav" class="primary-nav">
+        <a href="#about">About</a>
+        <a href="#fixtures">Fixtures</a>
+        <a href="#results">Results</a>
+        <a href="#highlights">Highlights</a>
+        <a href="#media">Media</a>
+        <a href="#contact">Contact</a>
+        <a class="nav-admin" href="admin.html">Admin</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="top" class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Community. Courage. Glory.</p>
+          <h1 id="heroTitle">A new football club with a serious identity.</h1>
+          <p id="heroText" class="hero-text">
+            Greatest Glory Football Club is preparing to grow from local ambition into a disciplined,
+            modern club that people proudly support on and off the pitch.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#fixtures">View Match Schedule</a>
+            <a class="button button-secondary" href="#about">Discover The Club</a>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <div class="crest-frame">
+            <img src="assets/images/logo.png" alt="Greatest Glory Football Club crest">
+          </div>
+          <div class="next-match">
+            <div class="section-chip">Next Match</div>
+            <div id="nextMatchCard" class="stack-card"></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="ticker-row">
+        <div class="section-chip">Club Notes</div>
+        <div id="announcementTicker" class="ticker-track"></div>
+      </section>
+
+      <section id="about" class="section split-section">
+        <div>
+          <p class="eyebrow">Club Identity</p>
+          <h2 id="clubNameHeading">Greatest Glory Football Club</h2>
+          <p id="clubSummary" class="section-copy"></p>
+          <div class="value-grid">
+            <article class="value-card">
+              <h3>Competitive Mindset</h3>
+              <p>We want every session and every match to raise the standard of the club.</p>
+            </article>
+            <article class="value-card">
+              <h3>Youth Development</h3>
+              <p>Young players and local talent are part of the long-term plan from day one.</p>
+            </article>
+            <article class="value-card">
+              <h3>Community Pride</h3>
+              <p>Supporters, volunteers, and families help shape the culture around the team.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="info-column">
+          <div class="info-stack">
+            <div class="section-chip">Club Snapshot</div>
+            <div class="snapshot-grid">
+              <article>
+                <strong id="foundedYear">2026</strong>
+                <span>Founded</span>
+              </article>
+              <article>
+                <strong id="clubCity">Yangon</strong>
+                <span>Base City</span>
+              </article>
+              <article>
+                <strong id="clubGround">Glory Arena</strong>
+                <span>Home Ground</span>
+              </article>
+              <article>
+                <strong id="clubMotto">Rise With Purpose</strong>
+                <span>Club Motto</span>
+              </article>
+            </div>
+          </div>
+
+          <div class="info-stack">
+            <div class="section-chip">Matchday Focus</div>
+            <div class="focus-points">
+              <span>Fast transition football</span>
+              <span>Organised pressing</span>
+              <span>Fearless young talent</span>
+              <span>Strong supporter atmosphere</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="fixtures" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Upcoming</p>
+            <h2>Fixtures</h2>
+          </div>
+          <a class="text-link" href="detail.html?collection=fixtures">See all fixtures</a>
+        </div>
+        <div id="fixturesGrid" class="card-grid"></div>
+      </section>
+
+      <section id="results" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Recent Matches</p>
+            <h2>Results</h2>
+          </div>
+          <a class="text-link" href="detail.html?collection=results">Match archive</a>
+        </div>
+        <div id="resultsGrid" class="card-grid"></div>
+      </section>
+
+      <section id="highlights" class="section feature-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Storytelling</p>
+            <h2>Highlights & News</h2>
+          </div>
+          <a class="text-link" href="detail.html?collection=highlights">View feature stories</a>
+        </div>
+        <div id="highlightsGrid" class="feature-grid"></div>
+      </section>
+
+      <section id="media" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Drive Library</p>
+            <h2>Media Board</h2>
+          </div>
+          <a class="text-link" href="detail.html?collection=media">Open media details</a>
+        </div>
+        <div id="mediaGrid" class="media-grid"></div>
+      </section>
+
+      <section class="section roadmap-section">
+        <div>
+          <p class="eyebrow">Future Ready</p>
+          <h2>Built to grow with the club</h2>
+        </div>
+        <div class="roadmap-grid">
+          <article class="roadmap-card">
+            <h3>Now</h3>
+            <p>Launch the club story, post schedules, share results, and publish simple match reports.</p>
+          </article>
+          <article class="roadmap-card">
+            <h3>Next</h3>
+            <p>Add Google Drive powered highlights, player galleries, downloadable PDFs, and sponsor packs.</p>
+          </article>
+          <article class="roadmap-card">
+            <h3>Later</h3>
+            <p>Embed livestream links, expand supporter membership, and publish richer club statistics.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="contact" class="section contact-section">
+        <div class="contact-copy">
+          <p class="eyebrow">Join The Journey</p>
+          <h2>Support, partner, or take part</h2>
+          <p>
+            Even though the club is just getting started, the website is already structured to handle
+            fixtures, results, highlights, documents, image uploads, and future livestream announcements.
+          </p>
+        </div>
+        <div class="contact-card">
+          <div class="section-chip">Contact</div>
+          <p><strong>Email:</strong> <a id="contactEmail" href="mailto:hello@greatestgloryfc.club">hello@greatestgloryfc.club</a></p>
+          <p><strong>Phone:</strong> <a id="contactPhone" href="tel:+959000000000">+95 9 000 000 000</a></p>
+          <div id="socialLinks" class="social-links"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Greatest Glory Football Club</p>
+      <small>Static frontend for GitHub Pages. Dynamic content can be managed through the admin panel and a Google Drive CSV backend.</small>
+    </footer>
+  </div>
+
+  <script src="assets/scripts/config.js"></script>
+  <script src="assets/scripts/core.js"></script>
+  <script src="assets/scripts/site.js"></script>
+</body>
+</html>
