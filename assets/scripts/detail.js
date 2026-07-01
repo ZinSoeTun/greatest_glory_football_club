@@ -279,17 +279,21 @@
     let previewHtml = '<div class="detail-empty">Preview မရသေးပါ။</div>';
     if (asset.kind === "image") {
       let finalUrl = asset.previewUrl || "";
-      if (finalUrl.includes("drive.google.com")) {
+
+      if (
+        finalUrl.includes("drive.google.com") ||
+        finalUrl.includes("docs.google.com")
+      ) {
         let fileId = "";
 
         if (finalUrl.includes("/file/d/")) {
           fileId = finalUrl.split("/file/d/")[1].split("/")[0];
-        } else {
+        } else if (finalUrl.includes("id=")) {
           const match = finalUrl.match(/id=([a-zA-Z0-9_-]+)/);
           if (match) fileId = match[1];
         }
         if (fileId) {
-          finalUrl = "https://lh3.googleusercontent.com/d/" + fileId;
+          finalUrl = "http://googleusercontent.com/profile/picture/6" + fileId;
         }
       }
 
