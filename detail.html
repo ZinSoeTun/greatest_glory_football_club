@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Greatest Glory FC Detail</title>
+  <title>GGFC | အသေးစိတ်ကြည့်ရန်</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&family=Noto+Serif+Myanmar:wght@600;700&display=swap"
     rel="stylesheet"
   >
   <link rel="stylesheet" href="assets/styles/main.css">
@@ -16,22 +16,24 @@
   <div class="site-shell detail-shell">
     <header class="site-header compact-header">
       <a class="brand" href="index.html">
-        <img src="assets/images/logo.png" alt="Greatest Glory Football Club logo">
+        <img src="assets/images/logo.png" alt="Greatest Glory FC လိုဂို">
         <span>
           <strong>Greatest Glory FC</strong>
-          <small>Detail Viewer</small>
+          <small>အသေးစိတ်ကြည့်ရှုရန်</small>
         </span>
       </a>
       <nav class="primary-nav static-nav">
-        <a href="index.html">Home</a>
-        <a href="admin.html">Admin</a>
+        <a href="index.html">ပင်မစာမျက်နှာ</a>
+        <a href="admin.html">စီမံခန့်ခွဲမှု</a>
       </nav>
     </header>
 
+    <div id="publicSyncNotice" class="sync-notice" hidden></div>
+
     <main class="detail-main">
       <section class="detail-hero">
-        <div class="section-chip">Record Detail</div>
-        <h1 id="detailTitle">Loading record...</h1>
+        <div class="section-chip">အချက်အလက်အသေးစိတ်</div>
+        <h1 id="detailTitle">အချက်အလက်ကို ဖွင့်နေပါတယ်...</h1>
         <p id="detailMeta" class="hero-text"></p>
       </section>
 
@@ -40,6 +42,12 @@
         <div id="detailAsset" class="detail-asset"></div>
       </section>
     </main>
+
+    <footer class="site-footer site-footer-compact">
+      <p>Greatest Glory FC</p>
+      <small>အသေးစိတ် အကြောင်းအရာများကို GGFC content system နဲ့ sync လုပ်ပြီး ပြသထားပါသည်။</small>
+      <small class="site-credit">&copy; 2026 Greatest Glory FC. ဒီ website ကို Zin Soe Tun က ရေးသားတည်ဆောက်ထားသည်။</small>
+    </footer>
   </div>
 
   <script src="assets/scripts/config.js"></script>

@@ -38,16 +38,17 @@ const GGFC_HEADERS = [
 function doGet(e) {
   try {
     const action = (e && e.parameter && e.parameter.action) || "list";
+    if (action === "bridge") {
+      return buildBridgeHtml_((e && e.parameter && e.parameter.bridgeId) || "");
+    }
+
     if (action !== "list") {
       throw new Error("Unsupported action.");
     }
 
     return jsonResponse_({
       ok: true,
-      data: {
-        records: getRecords_(),
-        generatedAt: new Date().toISOString(),
-      },
+      data: handleBridgeRequest({ action: "list" }),
     });
   } catch (error) {
     return jsonResponse_({
@@ -60,21 +61,7 @@ function doGet(e) {
 function doPost(e) {
   try {
     const payload = JSON.parse((e && e.postData && e.postData.contents) || "{}");
-    const action = payload.action || "";
-
-    if (action === "upsert") {
-      authorize_(payload.adminKey);
-      const result = upsertRecord_(payload.collection, payload.record || {}, payload.file || null, payload.previousFileId || "");
-      return jsonResponse_({ ok: true, data: result });
-    }
-
-    if (action === "delete") {
-      authorize_(payload.adminKey);
-      const result = deleteRecord_(payload.collection, payload.id);
-      return jsonResponse_({ ok: true, data: result });
-    }
-
-    throw new Error("Unsupported action.");
+    return jsonResponse_({ ok: true, data: handleBridgeRequest(payload) });
   } catch (error) {
     return jsonResponse_({
       ok: false,
@@ -83,7 +70,117 @@ function doPost(e) {
   }
 }
 
-function authorize_(adminKey) {
+function handleBridgeRequest(payload) {
+  const request = payload || {};
+  const action = request.action || "list";
+
+  if (action === "list") {
+    return {
+      records: getRecords_(),
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  if (action === "login") {
+    return createSession_(request.adminKey);
+  }
+
+  if (action === "validateSession") {
+    return getSessionSnapshot_(request.sessionToken);
+  }
+
+  if (action === "logout") {
+    if (request.adminKey) {
+      authorizeAdminKey_(request.adminKey);
+    }
+    revokeSession_(request.sessionToken);
+    return { loggedOut: true };
+  }
+
+  if (action === "upsert") {
+    authorizeRequest_(request);
+    return upsertRecord_(request.collection, request.record || {}, request.file || null, request.previousFileId || "");
+  }
+
+  if (action === "delete") {
+    authorizeRequest_(request);
+    return deleteRecord_(request.collection, request.id);
+  }
+
+  throw new Error("Unsupported action.");
+}
+
+function buildBridgeHtml_(bridgeId) {
+  const html = HtmlService.createHtmlOutput(`<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GGFC Bridge</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        const BRIDGE_CHANNEL = "GGFC_APPS_SCRIPT_BRIDGE_V1";
+        const BRIDGE_ID = ${JSON.stringify(String(bridgeId || ""))};
+
+        function respond(message) {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage(
+              Object.assign(
+                {
+                  channel: BRIDGE_CHANNEL,
+                  bridgeId: BRIDGE_ID,
+                },
+                message || {}
+              ),
+              "*"
+            );
+          }
+        }
+
+        window.addEventListener("message", function (event) {
+          const request = event.data || {};
+          if (
+            request.channel !== BRIDGE_CHANNEL ||
+            request.bridgeId !== BRIDGE_ID ||
+            request.type !== "request"
+          ) {
+            return;
+          }
+
+          google.script.run
+            .withSuccessHandler(function (data) {
+              respond({
+                type: "response",
+                requestId: request.requestId || "",
+                ok: true,
+                data: data,
+              });
+            })
+            .withFailureHandler(function (error) {
+              respond({
+                type: "response",
+                requestId: request.requestId || "",
+                ok: false,
+                error: error && error.message ? error.message : String(error || "Bridge request failed."),
+              });
+            })
+            .handleBridgeRequest(request.payload || {});
+        });
+
+        respond({
+          type: "ready",
+        });
+      })();
+    </script>
+  </body>
+</html>`);
+
+  return html.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function authorizeAdminKey_(adminKey) {
   const settings = getSettings_();
   if (!settings.adminKey) {
     throw new Error("Script property ADMIN_KEY is missing.");
@@ -93,15 +190,104 @@ function authorize_(adminKey) {
   }
 }
 
+function authorizeRequest_(payload) {
+  if (payload && payload.adminKey) {
+    authorizeAdminKey_(payload.adminKey);
+    return true;
+  }
+
+  if (payload && payload.sessionToken && validateSessionToken_(payload.sessionToken)) {
+    return true;
+  }
+
+  throw new Error("Authentication required.");
+}
+
 function getSettings_() {
   const properties = PropertiesService.getScriptProperties().getProperties();
+  const ttlMinutes = Number(properties.SESSION_TTL_MINUTES || "360");
   return {
     adminKey: properties.ADMIN_KEY || "",
     dataFolderId: properties.DATA_FOLDER_ID || "",
     csvFileName: properties.CSV_FILE_NAME || "ggfc-records.csv",
     mediaFolderName: properties.MEDIA_FOLDER_NAME || "ggfc-media",
     dataFolderName: properties.DATA_FOLDER_NAME || "GGFC Website Data",
+    sessionTtlSeconds: Math.max(300, Math.min(21600, Math.floor(ttlMinutes * 60) || 21600)),
   };
+}
+
+function sessionCacheKey_(sessionToken) {
+  return "ggfc-session:" + String(sessionToken || "");
+}
+
+function createSession_(adminKey) {
+  authorizeAdminKey_(adminKey);
+
+  const settings = getSettings_();
+  const authenticatedAt = new Date().toISOString();
+  const sessionToken = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "");
+  const expiresAt = new Date(Date.now() + settings.sessionTtlSeconds * 1000).toISOString();
+  const session = {
+    authenticatedAt: authenticatedAt,
+    expiresAt: expiresAt,
+  };
+
+  CacheService.getScriptCache().put(sessionCacheKey_(sessionToken), JSON.stringify(session), settings.sessionTtlSeconds);
+
+  return {
+    sessionToken: sessionToken,
+    authenticatedAt: authenticatedAt,
+    expiresAt: expiresAt,
+  };
+}
+
+function readSession_(sessionToken) {
+  if (!sessionToken) {
+    return null;
+  }
+
+  const raw = CacheService.getScriptCache().get(sessionCacheKey_(sessionToken));
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const session = JSON.parse(raw);
+    if (session.expiresAt && new Date(session.expiresAt).getTime() <= Date.now()) {
+      revokeSession_(sessionToken);
+      return null;
+    }
+    return session;
+  } catch (error) {
+    revokeSession_(sessionToken);
+    return null;
+  }
+}
+
+function validateSessionToken_(sessionToken) {
+  return !!readSession_(sessionToken);
+}
+
+function getSessionSnapshot_(sessionToken) {
+  const session = readSession_(sessionToken);
+  if (!session) {
+    throw new Error("Session expired or invalid.");
+  }
+
+  return {
+    valid: true,
+    sessionToken: sessionToken,
+    authenticatedAt: session.authenticatedAt || "",
+    expiresAt: session.expiresAt || "",
+  };
+}
+
+function revokeSession_(sessionToken) {
+  if (!sessionToken) {
+    return;
+  }
+
+  CacheService.getScriptCache().remove(sessionCacheKey_(sessionToken));
 }
 
 function getDataFolder_() {

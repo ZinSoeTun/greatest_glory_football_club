@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Greatest Glory FC Admin</title>
+  <title>GGFC | Admin ထိန်းချုပ်ခန်း</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&family=Noto+Serif+Myanmar:wght@600;700&display=swap"
     rel="stylesheet"
   >
   <link rel="stylesheet" href="assets/styles/admin.css">
@@ -16,24 +16,24 @@
   <div class="admin-shell">
     <aside class="admin-sidebar">
       <a class="brand" href="index.html">
-        <img src="assets/images/logo.png" alt="Greatest Glory Football Club logo">
+        <img src="assets/images/logo.png" alt="Greatest Glory FC လိုဂို">
         <span>
-          <strong>GGFC Control Room</strong>
-          <small>Content and media manager</small>
+          <strong>GGFC ထိန်းချုပ်ခန်း</strong>
+          <small>အကြောင်းအရာနဲ့ မီဒီယာ စီမံခန့်ခွဲမှု</small>
         </span>
       </a>
 
       <section class="panel">
         <div class="panel-heading">
-          <h2>Data Source</h2>
-          <span class="chip">Frontend only</span>
+          <h2>ဒေတာရင်းမြစ်</h2>
+          <span id="dataSourceChip" class="chip">Local Demo</span>
         </div>
 
         <label class="field">
-          <span>Google Drive mode</span>
+          <span>အသုံးပြုမည့် mode</span>
           <select id="modeSelect">
-            <option value="local">Local demo mode</option>
-            <option value="remote">Google Drive mode</option>
+            <option value="local">Local demo mode (browser ထဲသိမ်းမယ်)</option>
+            <option value="remote">Google Drive mode (online sync)</option>
           </select>
         </label>
 
@@ -41,76 +41,131 @@
           <span>Apps Script URL</span>
           <input id="endpointInput" type="url" placeholder="https://script.google.com/macros/s/.../exec">
         </label>
+        <p class="microcopy microcopy-compact">
+          Public visitor တွေက ဒီ browser ထဲက settings ကို မသုံးပါဘူး။ လူတိုင်း Google Drive data မြင်ရအောင် `assets/scripts/config.js` ထဲက `publicApiUrl` မှန်နေပြီး GitHub Pages site ကို redeploy လုပ်ထားဖို့ လိုပါတယ်။
+        </p>
 
         <label class="field">
           <span>Admin Key</span>
-          <input id="adminKeyInput" type="password" placeholder="Saved only in your browser">
+          <input id="adminKeyInput" type="password" placeholder="Local demo password (သို့) Apps Script admin key">
+        </label>
+
+        <label class="field">
+          <span>Local data စတင်ပုံ</span>
+          <select id="demoBehaviorSelect">
+            <option value="empty">အလွတ်စမယ် (dummy data auto မထည့်ဘူး)</option>
+            <option value="seed">Demo fallback ဖွင့်မယ် (browser data မရှိရင် demo data ပြန်တင်မယ်)</option>
+          </select>
         </label>
 
         <div class="button-row">
-          <button id="saveSettingsButton" class="button button-primary" type="button">Save Settings</button>
-          <button id="testConnectionButton" class="button button-secondary" type="button">Test Connection</button>
+          <button id="saveSettingsButton" class="button button-primary" type="button">Settings သိမ်းမယ်</button>
+          <button id="testConnectionButton" class="button button-secondary" type="button">ချိတ်ဆက်မှု စမ်းမယ်</button>
+        </div>
+
+        <div class="button-row">
+          <button id="unlockAdminButton" class="button button-primary" type="button">Admin ဝင်မယ်</button>
+          <button id="logoutButton" class="button button-secondary" type="button" hidden>ထွက်မယ်</button>
+        </div>
+
+        <div class="button-row">
+          <button id="loadDemoDataButton" class="button button-secondary" type="button">Demo data ထည့်မယ်</button>
+          <button id="resetLocalDataButton" class="button button-secondary" type="button">Local data အလွတ်လုပ်မယ်</button>
+        </div>
+
+        <div id="authStatus" class="inline-status">
+          Admin feature တွေကိုသုံးဖို့ အတည်ပြုဝင်ရန် လိုအပ်ပါတယ်။
         </div>
 
         <div id="dataSourceStatus" class="inline-status">
-          Save your settings, then test the Apps Script connection.
+          Settings ကို သိမ်းပြီးရင် local demo mode (သို့) Google Drive mode နဲ့ ချိတ်ထားတာကို စမ်းကြည့်နိုင်ပါတယ်။
         </div>
 
         <p class="microcopy">
-          Local mode is perfect for design and demos. Remote mode uses Google Apps Script to update
-          a CSV file and uploaded media inside Google Drive.
+          Local demo mode က browser ထဲမှာပဲ data သိမ်းပြီး demo / design preview အတွက် သင့်တော်ပါတယ်။
+          Google Drive mode ကတော့ Apps Script session login သုံးပြီး CSV file နဲ့ uploaded media တွေကို online sync လုပ်ပေးပါတယ်။
         </p>
       </section>
 
-      <section class="panel">
+      <section id="collectionsPanel" class="panel" hidden>
         <div class="panel-heading">
-          <h2>Collections</h2>
+          <h2>ကဏ္ဍများ</h2>
           <span class="chip">CRUD</span>
         </div>
         <div id="collectionTabs" class="tab-stack"></div>
       </section>
 
-      <section class="panel">
+      <section id="statusPanel" class="panel" hidden>
         <div class="panel-heading">
-          <h2>Status</h2>
-          <span class="chip">Live</span>
+          <h2>အခြေအနေ</h2>
+          <span class="chip">Status</span>
         </div>
-        <div id="statusBox" class="status-box">Ready to manage content.</div>
+        <div id="statusBox" class="status-box">Admin workspace ကို ဖွင့်ဖို့ အတည်ပြုဝင်ပါ။</div>
       </section>
     </aside>
 
     <main class="admin-main">
-      <header class="page-head">
-        <div>
-          <p class="eyebrow">Greatest Glory Football Club</p>
-          <h1 id="adminTitle">Manage Club Profile</h1>
-          <p id="adminDescription" class="page-copy">
-            Add club information, fixtures, results, highlights, and media without using a traditional database.
-          </p>
-        </div>
-        <div class="header-actions">
-          <a class="button button-secondary" href="index.html" target="_blank" rel="noreferrer">Open Website</a>
-          <button id="newRecordButton" class="button button-primary" type="button">New Record</button>
-        </div>
-      </header>
+      <section id="authGate" class="panel auth-gate">
+        <p class="eyebrow">GGFC Admin Access</p>
+        <h1>Admin feature တွေကို ဖွင့်ဖို့ အတည်ပြုဝင်ပါ</h1>
+        <p class="page-copy">
+          Mode ကိုရွေးပြီး `Admin Key` ထည့်ကာ `Admin ဝင်မယ်` ကိုနှိပ်ပါ။ Google Drive mode သုံးမယ်ဆိုရင် Apps Script URL ကိုလည်း အရင်သတ်မှတ်ထားရပါမယ်။
+        </p>
 
-      <section class="workspace-grid">
-        <article class="panel editor-panel">
-          <div class="panel-heading">
-            <h2>Editor</h2>
-            <span id="editorModeChip" class="chip">Create</span>
-          </div>
-          <form id="recordForm" class="record-form"></form>
-        </article>
-
-        <article class="panel list-panel">
-          <div class="panel-heading">
-            <h2>Existing Records</h2>
-            <span id="recordCountChip" class="chip">0 items</span>
-          </div>
-          <div id="recordList" class="record-list"></div>
-        </article>
+        <div class="auth-notes">
+          <article class="note-card">
+            <h2>Local Demo</h2>
+            <p>Browser ထဲမှာ sample content, layout preview, responsive test တွေကို စမ်းသပ်ဖို့ သင့်တော်ပါတယ်။</p>
+          </article>
+          <article class="note-card">
+            <h2>Google Drive</h2>
+            <p>Apps Script နဲ့ authenticate ဝင်ပြီးမှ CSV / media CRUD တွေကို online update လုပ်နိုင်ပါတယ်။</p>
+          </article>
+          <article class="note-card">
+            <h2>Security Note</h2>
+            <p>Public GitHub Pages site အတွက် local mode က frontend lock ပဲဖြစ်ပါတယ်။ တကယ့် admin control အတွက် remote mode ကိုသုံးပါ။</p>
+          </article>
+        </div>
       </section>
+
+      <div id="workspaceArea" hidden>
+        <header class="page-head">
+          <div>
+            <p class="eyebrow">Greatest Glory Football Club</p>
+            <h1 id="adminTitle">အသင်းမိတ်ဆက်ကို စီမံမယ်</h1>
+            <p id="adminDescription" class="page-copy">
+              Database မသုံးဘဲ အသင်းအချက်အလက်၊ ပွဲစဉ်၊ ရလဒ်၊ highlight နဲ့ media data တွေကို ဒီနေရာကနေ စီမံနိုင်ပါတယ်။
+            </p>
+          </div>
+          <div class="header-actions">
+            <a class="button button-secondary" href="index.html" target="_blank" rel="noreferrer">Website ဖွင့်မယ်</a>
+            <button id="newRecordButton" class="button button-primary" type="button">အချက်အလက်အသစ်</button>
+          </div>
+        </header>
+
+        <section class="workspace-grid">
+          <article class="panel editor-panel">
+            <div class="panel-heading">
+              <h2>ရေးသားရန်</h2>
+              <span id="editorModeChip" class="chip">အသစ်</span>
+            </div>
+            <form id="recordForm" class="record-form"></form>
+          </article>
+
+          <article class="panel list-panel">
+            <div class="panel-heading">
+              <h2>ရှိနေပြီးသား အချက်အလက်များ</h2>
+              <span id="recordCountChip" class="chip">၀ ခု</span>
+            </div>
+            <div id="recordList" class="record-list"></div>
+          </article>
+        </section>
+      </div>
+
+      <footer class="admin-footer">
+        <p>Greatest Glory FC Admin</p>
+        <small>&copy; 2026 Greatest Glory FC. ဒီ website system ကို Zin Soe Tun က ရေးသားတည်ဆောက်ထားသည်။</small>
+      </footer>
     </main>
   </div>
 
