@@ -484,7 +484,7 @@
       }
 
       if (fileId) {
-        return "http://googleusercontent.com/profile/picture/7" + fileId;
+        return "https://lh3.googleusercontent.com/d/" + fileId;
       }
     }
     return finalUrl;
