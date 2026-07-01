@@ -21,10 +21,42 @@
   };
 
   const FACT_FIELD_ORDER = {
-    profile: ["motto", "foundedYear", "city", "ground", "contactEmail", "contactPhone", "facebookUrl", "youtubeUrl", "instagramUrl", "updatedAt"],
+    profile: [
+      "motto",
+      "foundedYear",
+      "city",
+      "ground",
+      "contactEmail",
+      "contactPhone",
+      "facebookUrl",
+      "youtubeUrl",
+      "instagramUrl",
+      "updatedAt",
+    ],
     announcements: ["date", "badge", "fileName", "createdAt", "updatedAt"],
-    fixtures: ["status", "date", "time", "opponent", "competition", "venue", "location", "fileName", "updatedAt"],
-    results: ["status", "date", "time", "opponent", "competition", "venue", "location", "score", "fileName", "updatedAt"],
+    fixtures: [
+      "status",
+      "date",
+      "time",
+      "opponent",
+      "competition",
+      "venue",
+      "location",
+      "fileName",
+      "updatedAt",
+    ],
+    results: [
+      "status",
+      "date",
+      "time",
+      "opponent",
+      "competition",
+      "venue",
+      "location",
+      "score",
+      "fileName",
+      "updatedAt",
+    ],
     highlights: ["date", "badge", "fileName", "updatedAt"],
     media: ["mediaType", "date", "fileName", "updatedAt"],
   };
@@ -43,16 +75,22 @@
   }
 
   function detailUrl(record) {
-    return "detail.html?collection=" + encodeURIComponent(collection) + "&slug=" + encodeURIComponent(record.slug || record.id);
+    return (
+      "detail.html?collection=" +
+      encodeURIComponent(collection) +
+      "&slug=" +
+      encodeURIComponent(record.slug || record.id)
+    );
   }
 
   function definitionLabel(fieldName) {
     const definition = COLLECTION_DEFINITIONS[collection];
-    const field = definition && Array.isArray(definition.fields)
-      ? definition.fields.find(function (item) {
-          return item.name === fieldName;
-        })
-      : null;
+    const field =
+      definition && Array.isArray(definition.fields)
+        ? definition.fields.find(function (item) {
+            return item.name === fieldName;
+          })
+        : null;
 
     return EXTRA_LABELS[fieldName] || (field && field.label) || fieldName;
   }
@@ -71,11 +109,13 @@
       [
         helpers.formatDate(parsed.toISOString()),
         helpers.toMyanmarDigits(
-          parsed.getHours().toString().padStart(2, "0") + ":" + parsed.getMinutes().toString().padStart(2, "0")
+          parsed.getHours().toString().padStart(2, "0") +
+            ":" +
+            parsed.getMinutes().toString().padStart(2, "0"),
         ),
       ]
         .filter(Boolean)
-        .join(" | ")
+        .join(" | "),
     );
   }
 
@@ -125,13 +165,21 @@
     return [
       '<article class="detail-fact">',
       "<span>" + helpers.escapeHtml(label) + "</span>",
-      isHtml ? '<div class="detail-fact-value">' + value + "</div>" : '<strong>' + helpers.escapeHtml(value) + "</strong>",
+      isHtml
+        ? '<div class="detail-fact-value">' + value + "</div>"
+        : "<strong>" + helpers.escapeHtml(value) + "</strong>",
       "</article>",
     ].join("");
   }
 
   function createLinkValue(url, label) {
-    return '<a class="text-link" href="' + helpers.escapeHtml(url) + '" target="_blank" rel="noreferrer">' + helpers.escapeHtml(label || url) + "</a>";
+    return (
+      '<a class="text-link" href="' +
+      helpers.escapeHtml(url) +
+      '" target="_blank" rel="noreferrer">' +
+      helpers.escapeHtml(label || url) +
+      "</a>"
+    );
   }
 
   function buildFacts(record) {
@@ -145,19 +193,36 @@
         }
 
         if (fieldName === "date") {
-          return createFactCard(definitionLabel(fieldName), helpers.formatDate(rawValue));
+          return createFactCard(
+            definitionLabel(fieldName),
+            helpers.formatDate(rawValue),
+          );
         }
         if (fieldName === "time") {
-          return createFactCard(definitionLabel(fieldName), helpers.formatTime(rawValue));
+          return createFactCard(
+            definitionLabel(fieldName),
+            helpers.formatTime(rawValue),
+          );
         }
         if (fieldName === "status" || fieldName === "mediaType") {
-          return createFactCard(definitionLabel(fieldName), localizeValue(rawValue));
+          return createFactCard(
+            definitionLabel(fieldName),
+            localizeValue(rawValue),
+          );
         }
         if (fieldName === "createdAt" || fieldName === "updatedAt") {
-          return createFactCard(definitionLabel(fieldName), formatTimestamp(rawValue), true);
+          return createFactCard(
+            definitionLabel(fieldName),
+            formatTimestamp(rawValue),
+            true,
+          );
         }
         if (/Url$/.test(fieldName)) {
-          return createFactCard(definitionLabel(fieldName), createLinkValue(rawValue, rawValue), true);
+          return createFactCard(
+            definitionLabel(fieldName),
+            createLinkValue(rawValue, rawValue),
+            true,
+          );
         }
 
         return createFactCard(definitionLabel(fieldName), rawValue);
@@ -185,7 +250,13 @@
       '<div class="detail-link-list">',
       links
         .map(function (item) {
-          return '<a class="button button-secondary button-link" href="' + helpers.escapeHtml(item.url) + '" target="_blank" rel="noreferrer">' + helpers.escapeHtml(item.label) + "</a>";
+          return (
+            '<a class="button button-secondary button-link" href="' +
+            helpers.escapeHtml(item.url) +
+            '" target="_blank" rel="noreferrer">' +
+            helpers.escapeHtml(item.label) +
+            "</a>"
+          );
         })
         .join(""),
       "</div>",
@@ -207,20 +278,61 @@
 
     let previewHtml = '<div class="detail-empty">Preview မရသေးပါ။</div>';
     if (asset.kind === "image") {
-      previewHtml = '<img src="' + helpers.escapeHtml(asset.previewUrl) + '" alt="' + helpers.escapeHtml(record.title || "") + '">';
+      let finalUrl = asset.previewUrl || "";
+      if (finalUrl.includes("drive.google.com")) {
+        let fileId = "";
+
+        if (finalUrl.includes("/file/d/")) {
+          fileId = finalUrl.split("/file/d/")[1].split("/")[0];
+        } else {
+          const match = finalUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (match) fileId = match[1];
+        }
+        if (fileId) {
+          finalUrl = "https://lh3.googleusercontent.com/d/" + fileId;
+        }
+      }
+
+      previewHtml =
+        '<img src="' +
+        helpers.escapeHtml(finalUrl) +
+        '" alt="' +
+        helpers.escapeHtml(record.title || "") +
+        '">';
     } else if (asset.kind === "video") {
-      previewHtml = '<video controls preload="metadata" src="' + helpers.escapeHtml(asset.previewUrl) + '"></video>';
+      previewHtml =
+        '<video controls preload="metadata" src="' +
+        helpers.escapeHtml(asset.previewUrl) +
+        '"></video>';
     } else if (asset.kind === "audio") {
-      previewHtml = '<audio controls preload="metadata" src="' + helpers.escapeHtml(asset.previewUrl) + '"></audio>';
+      previewHtml =
+        '<audio controls preload="metadata" src="' +
+        helpers.escapeHtml(asset.previewUrl) +
+        '"></audio>';
     } else if (asset.kind === "iframe") {
-      previewHtml = '<iframe src="' + helpers.escapeHtml(asset.previewUrl) + '" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+      previewHtml =
+        '<iframe src="' +
+        helpers.escapeHtml(asset.previewUrl) +
+        '" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
     }
 
-    const fileName = asset.fileName ? '<p class="asset-note"><strong>ဖိုင်:</strong> ' + helpers.escapeHtml(asset.fileName) + "</p>" : "";
-    const note = asset.note ? '<p class="asset-note">' + helpers.escapeHtml(asset.note) + "</p>" : "";
+    const fileName = asset.fileName
+      ? '<p class="asset-note"><strong>ဖိုင်:</strong> ' +
+        helpers.escapeHtml(asset.fileName) +
+        "</p>"
+      : "";
+    const note = asset.note
+      ? '<p class="asset-note">' + helpers.escapeHtml(asset.note) + "</p>"
+      : "";
     const actions = (asset.actions || [])
       .map(function (action) {
-        return '<a class="button button-secondary button-link" href="' + helpers.escapeHtml(action.url) + '" target="_blank" rel="noreferrer">' + helpers.escapeHtml(action.label) + "</a>";
+        return (
+          '<a class="button button-secondary button-link" href="' +
+          helpers.escapeHtml(action.url) +
+          '" target="_blank" rel="noreferrer">' +
+          helpers.escapeHtml(action.label) +
+          "</a>"
+        );
       })
       .join("");
 
@@ -250,16 +362,41 @@
       .filter(Boolean)
       .join(" | ");
 
-    document.getElementById("detailTitle").textContent = record.title || "အသေးစိတ်အချက်အလက်";
+    document.getElementById("detailTitle").textContent =
+      record.title || "အသေးစိတ်အချက်အလက်";
     document.getElementById("detailMeta").textContent = meta;
 
     const sections = [
-      record.badge ? '<div class="section-chip">' + helpers.escapeHtml(record.badge) + "</div>" : "",
-      record.summary ? '<section class="detail-section"><h2>အကျဉ်းချုပ်</h2>' + helpers.textToHtml(record.summary) + "</section>" : "",
-      record.body ? '<section class="detail-section"><h2>အသေးစိတ်</h2>' + helpers.textToHtml(record.body) + "</section>" : "",
-      renderTagRow(record.tags) ? '<section class="detail-section"><h2>Tag များ</h2>' + renderTagRow(record.tags) + "</section>" : "",
-      buildFacts(record) ? '<section class="detail-section"><h2>အချက်အလက်အပြည့်အစုံ</h2><div class="detail-facts-grid">' + buildFacts(record) + "</div></section>" : "",
-      record.externalUrl ? '<section class="detail-section"><h2>ပြင်ပ link</h2><div class="detail-link-list"><a class="button button-secondary button-link" href="' + helpers.escapeHtml(record.externalUrl) + '" target="_blank" rel="noreferrer">ပြင်ပ link ကိုဖွင့်မယ်</a></div></section>' : "",
+      record.badge
+        ? '<div class="section-chip">' +
+          helpers.escapeHtml(record.badge) +
+          "</div>"
+        : "",
+      record.summary
+        ? '<section class="detail-section"><h2>အကျဉ်းချုပ်</h2>' +
+          helpers.textToHtml(record.summary) +
+          "</section>"
+        : "",
+      record.body
+        ? '<section class="detail-section"><h2>အသေးစိတ်</h2>' +
+          helpers.textToHtml(record.body) +
+          "</section>"
+        : "",
+      renderTagRow(record.tags)
+        ? '<section class="detail-section"><h2>Tag များ</h2>' +
+          renderTagRow(record.tags) +
+          "</section>"
+        : "",
+      buildFacts(record)
+        ? '<section class="detail-section"><h2>အချက်အလက်အပြည့်အစုံ</h2><div class="detail-facts-grid">' +
+          buildFacts(record) +
+          "</div></section>"
+        : "",
+      record.externalUrl
+        ? '<section class="detail-section"><h2>ပြင်ပ link</h2><div class="detail-link-list"><a class="button button-secondary button-link" href="' +
+          helpers.escapeHtml(record.externalUrl) +
+          '" target="_blank" rel="noreferrer">ပြင်ပ link ကိုဖွင့်မယ်</a></div></section>'
+        : "",
       collection === "profile" ? buildProfileLinks(record) : "",
     ].filter(Boolean);
 
@@ -269,12 +406,16 @@
 
   function renderCollectionArchive(records) {
     const definition = COLLECTION_DEFINITIONS[collection];
-    document.getElementById("detailTitle").textContent = (definition ? definition.label : "အချက်အလက်များ") + " မှတ်တမ်း";
-    document.getElementById("detailMeta").textContent = "ဒီ section ထဲက record အားလုံးကို အောက်မှာ ကြည့်နိုင်ပါတယ်။";
+    document.getElementById("detailTitle").textContent =
+      (definition ? definition.label : "အချက်အလက်များ") + " မှတ်တမ်း";
+    document.getElementById("detailMeta").textContent =
+      "ဒီ section ထဲက record အားလုံးကို အောက်မှာ ကြည့်နိုင်ပါတယ်။";
 
     if (!records.length) {
-      document.getElementById("detailBody").innerHTML = '<div class="empty-state">ဒီ section ထဲမှာ record မရှိသေးပါ။</div>';
-      document.getElementById("detailAsset").innerHTML = '<div class="detail-empty">စီမံခန့်ခွဲမှုစာမျက်နှာကနေ ပထမဆုံးအချက်အလက်ကို ထည့်နိုင်ပါတယ်။</div>';
+      document.getElementById("detailBody").innerHTML =
+        '<div class="empty-state">ဒီ section ထဲမှာ record မရှိသေးပါ။</div>';
+      document.getElementById("detailAsset").innerHTML =
+        '<div class="detail-empty">စီမံခန့်ခွဲမှုစာမျက်နှာကနေ ပထမဆုံးအချက်အလက်ကို ထည့်နိုင်ပါတယ်။</div>';
       return;
     }
 
@@ -283,10 +424,18 @@
         return [
           '<article class="feature-card detail-archive-card">',
           "<h3>" + helpers.escapeHtml(record.title) + "</h3>",
-          '<div class="meta-line">' + helpers.escapeHtml(helpers.formatDateTime(record.date, record.time)) + "</div>",
-          "<p>" + helpers.escapeHtml(record.summary || record.body || "") + "</p>",
+          '<div class="meta-line">' +
+            helpers.escapeHtml(
+              helpers.formatDateTime(record.date, record.time),
+            ) +
+            "</div>",
+          "<p>" +
+            helpers.escapeHtml(record.summary || record.body || "") +
+            "</p>",
           renderTagRow(record.tags),
-          '<a class="text-link" href="' + detailUrl(record) + '">အသေးစိတ်ကြည့်မယ်</a>',
+          '<a class="text-link" href="' +
+            detailUrl(record) +
+            '">အသေးစိတ်ကြည့်မယ်</a>',
           "</article>",
         ].join("");
       })
@@ -297,8 +446,10 @@
   }
 
   function renderLoadingState() {
-    document.getElementById("detailTitle").textContent = "အချက်အလက်များကို ရယူနေပါတယ်...";
-    document.getElementById("detailMeta").textContent = "Google Drive ကနေ record ကို ဆွဲယူနေပါတယ်။";
+    document.getElementById("detailTitle").textContent =
+      "အချက်အလက်များကို ရယူနေပါတယ်...";
+    document.getElementById("detailMeta").textContent =
+      "Google Drive ကနေ record ကို ဆွဲယူနေပါတယ်။";
     document.getElementById("detailBody").innerHTML = [
       '<div class="loading-card" aria-hidden="true">',
       '<span class="loading-chip">တင်နေပါတယ်</span>',
@@ -320,10 +471,12 @@
 
   function recordsForCollection(data, collectionName) {
     return helpers.sortRecords(
-      (data && Array.isArray(data.records) ? data.records : []).filter(function (item) {
-        return item.collection === collectionName;
-      }),
-      collectionName
+      (data && Array.isArray(data.records) ? data.records : []).filter(
+        function (item) {
+          return item.collection === collectionName;
+        },
+      ),
+      collectionName,
     );
   }
 
@@ -341,9 +494,12 @@
 
     if (!record) {
       document.getElementById("detailTitle").textContent = "အချက်အလက် မတွေ့ပါ";
-      document.getElementById("detailMeta").textContent = "တောင်းဆိုထားတဲ့ record ကို ရှာမတွေ့ပါ။";
-      document.getElementById("detailBody").innerHTML = '<div class="empty-state">ဒီ record ကို ဖျက်ပြီးဖြစ်နိုင်သလို link မှားနေခြင်းလည်း ဖြစ်နိုင်ပါတယ်။</div>';
-      document.getElementById("detailAsset").innerHTML = '<div class="detail-empty">Admin panel မှာ record ရှိ/မရှိ ပြန်စစ်နိုင်ပါတယ်။</div>';
+      document.getElementById("detailMeta").textContent =
+        "တောင်းဆိုထားတဲ့ record ကို ရှာမတွေ့ပါ။";
+      document.getElementById("detailBody").innerHTML =
+        '<div class="empty-state">ဒီ record ကို ဖျက်ပြီးဖြစ်နိုင်သလို link မှားနေခြင်းလည်း ဖြစ်နိုင်ပါတယ်။</div>';
+      document.getElementById("detailAsset").innerHTML =
+        '<div class="detail-empty">Admin panel မှာ record ရှိ/မရှိ ပြန်စစ်နိုင်ပါတယ်။</div>';
       return;
     }
 
@@ -353,17 +509,25 @@
   async function init() {
     const definition = COLLECTION_DEFINITIONS[collection];
     if (!definition) {
-      document.getElementById("detailTitle").textContent = "မသိတဲ့ section ဖြစ်နေပါတယ်";
-      document.getElementById("detailMeta").textContent = "တောင်းဆိုထားတဲ့ section ကို စနစ်က မတွေ့ပါ။";
-      document.getElementById("detailBody").innerHTML = '<div class="empty-state">ပင်မစာမျက်နှာကို ပြန်သွားပြီး မှန်ကန်တဲ့ section ကို ပြန်ရွေးပါ။</div>';
-      document.getElementById("detailAsset").innerHTML = '<div class="detail-empty">Link ကို ပြန်စစ်ပြီး ထပ်မံဖွင့်ကြည့်ပါ။</div>';
+      document.getElementById("detailTitle").textContent =
+        "မသိတဲ့ section ဖြစ်နေပါတယ်";
+      document.getElementById("detailMeta").textContent =
+        "တောင်းဆိုထားတဲ့ section ကို စနစ်က မတွေ့ပါ။";
+      document.getElementById("detailBody").innerHTML =
+        '<div class="empty-state">ပင်မစာမျက်နှာကို ပြန်သွားပြီး မှန်ကန်တဲ့ section ကို ပြန်ရွေးပါ။</div>';
+      document.getElementById("detailAsset").innerHTML =
+        '<div class="detail-empty">Link ကို ပြန်စစ်ပြီး ထပ်မံဖွင့်ကြည့်ပါ။</div>';
       return;
     }
 
     renderLoadingState();
 
     const cachedData = store.getCachedData("site");
-    if (cachedData && Array.isArray(cachedData.records) && cachedData.records.length) {
+    if (
+      cachedData &&
+      Array.isArray(cachedData.records) &&
+      cachedData.records.length
+    ) {
       renderSnapshot(Object.assign({ _source: "cache" }, cachedData));
     }
 
