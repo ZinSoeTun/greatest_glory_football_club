@@ -32,7 +32,12 @@
   }
 
   function detailUrl(collection, record) {
-    return "detail.html?collection=" + encodeURIComponent(collection) + "&slug=" + encodeURIComponent(record.slug || record.id);
+    return (
+      "detail.html?collection=" +
+      encodeURIComponent(collection) +
+      "&slug=" +
+      encodeURIComponent(record.slug || record.id)
+    );
   }
 
   function buildMeta(record) {
@@ -80,12 +85,24 @@
   function createMatchCard(collection, record) {
     return [
       '<article class="match-card">',
-      '<div class="card-label"><strong>' + helpers.escapeHtml(localizeValue(record.status || collection, "ပွဲစဉ်")) + "</strong></div>",
+      '<div class="card-label"><strong>' +
+        helpers.escapeHtml(
+          localizeValue(record.status || collection, "ပွဲစဉ်"),
+        ) +
+        "</strong></div>",
       "<h3>" + helpers.escapeHtml(record.title) + "</h3>",
-      '<div class="meta-line">' + helpers.escapeHtml(buildMeta(record)) + "</div>",
-      record.score ? '<div class="score-line">' + helpers.escapeHtml(record.score) + "</div>" : "",
+      '<div class="meta-line">' +
+        helpers.escapeHtml(buildMeta(record)) +
+        "</div>",
+      record.score
+        ? '<div class="score-line">' +
+          helpers.escapeHtml(record.score) +
+          "</div>"
+        : "",
       "<p>" + helpers.escapeHtml(record.summary || "") + "</p>",
-      '<a class="text-link" href="' + detailUrl(collection, record) + '">အသေးစိတ်ကြည့်မယ်</a>',
+      '<a class="text-link" href="' +
+        detailUrl(collection, record) +
+        '">အသေးစိတ်ကြည့်မယ်</a>',
       "</article>",
     ].join("");
   }
@@ -93,9 +110,13 @@
   function createFeatureCard(record) {
     return [
       '<article class="feature-card">',
-      '<div class="card-label"><strong>' + helpers.escapeHtml(record.badge || "ထင်ရှားသတင်း") + "</strong></div>",
+      '<div class="card-label"><strong>' +
+        helpers.escapeHtml(record.badge || "ထင်ရှားသတင်း") +
+        "</strong></div>",
       "<h3>" + helpers.escapeHtml(record.title) + "</h3>",
-      '<div class="meta-line">' + helpers.escapeHtml(helpers.formatDate(record.date)) + "</div>",
+      '<div class="meta-line">' +
+        helpers.escapeHtml(helpers.formatDate(record.date)) +
+        "</div>",
       "<p>" + helpers.escapeHtml(record.summary || "") + "</p>",
       '<div class="tag-row">' +
         helpers
@@ -106,7 +127,9 @@
           })
           .join("") +
         "</div>",
-      '<a class="text-link" href="' + detailUrl("highlights", record) + '">ဆက်ဖတ်မယ်</a>',
+      '<a class="text-link" href="' +
+        detailUrl("highlights", record) +
+        '">ဆက်ဖတ်မယ်</a>',
       "</article>",
     ].join("");
   }
@@ -115,10 +138,16 @@
     if (!asset || asset.kind === "empty") {
       return "preview မရှိသေးပါ";
     }
-    if (asset.kind === "video" || (asset.kind === "iframe" && asset.mediaType === "video")) {
+    if (
+      asset.kind === "video" ||
+      (asset.kind === "iframe" && asset.mediaType === "video")
+    ) {
       return "ဗီဒီယို preview";
     }
-    if (asset.kind === "audio" || (asset.kind === "iframe" && asset.mediaType === "audio")) {
+    if (
+      asset.kind === "audio" ||
+      (asset.kind === "iframe" && asset.mediaType === "audio")
+    ) {
       return "အသံဖိုင် preview";
     }
     if (asset.kind === "iframe") {
@@ -132,34 +161,79 @@
 
   function createMediaCard(record) {
     const asset = helpers.resolveRecordAsset(record);
-    let preview = '<div class="media-preview"><span class="asset-label">' + helpers.escapeHtml(assetPreviewLabel(asset)) + "</span></div>";
+    let preview =
+      '<div class="media-preview"><span class="asset-label">' +
+      helpers.escapeHtml(assetPreviewLabel(asset)) +
+      "</span></div>";
 
     if (asset.kind === "image" && asset.previewUrl) {
-      preview = '<div class="media-preview"><img src="' + helpers.escapeHtml(asset.previewUrl) + '" alt="' + helpers.escapeHtml(record.title) + '"></div>';
+      let srcUrl = convertDriveUrl(asset.previewUrl || asset.fileUrl || "");
+      previewHtml =
+        '<img src="' +
+        helpers.escapeHtml(srcUrl) +
+        '" alt="' +
+        helpers.escapeHtml(record.title || "") +
+        '">';
     }
 
     return [
       '<article class="media-card">',
       preview,
-      '<div class="card-label"><strong>' + helpers.escapeHtml(localizeValue(record.mediaType, "မီဒီယာ")) + "</strong></div>",
+      '<div class="card-label"><strong>' +
+        helpers.escapeHtml(localizeValue(record.mediaType, "မီဒီယာ")) +
+        "</strong></div>",
       "<h3>" + helpers.escapeHtml(record.title) + "</h3>",
       "<p>" + helpers.escapeHtml(record.summary || "") + "</p>",
-      '<a class="text-link" href="' + detailUrl("media", record) + '">ဖိုင်ကြည့်မယ်</a>',
+      '<a class="text-link" href="' +
+        detailUrl("media", record) +
+        '">ဖိုင်ကြည့်မယ်</a>',
       "</article>",
     ].join("");
   }
 
+  function convertDriveUrl(url) {
+    if (!url || typeof url !== "string") return url;
+    let finalUrl = url.trim();
+
+    if (
+      finalUrl.includes("drive.google.com") ||
+      finalUrl.includes("docs.google.com")
+    ) {
+      let fileId = "";
+
+      if (finalUrl.includes("/file/d/")) {
+        fileId = finalUrl.split("/file/d/")[1].split("/")[0];
+      } else if (finalUrl.includes("id=")) {
+        const match = finalUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) fileId = match[1];
+      }
+
+      if (fileId) {
+        return "https://lh3.googleusercontent.com/d/" + fileId;
+      }
+    }
+    return finalUrl;
+  }
+
   function renderProfile(profile) {
-    document.getElementById("heroTitle").textContent = profile.heroTitle || profile.title || "အသင်း profile ကို ဒီနေရာမှာ ပြမယ်";
+    document.getElementById("heroTitle").textContent =
+      profile.heroTitle || profile.title || "အသင်း profile ကို ဒီနေရာမှာ ပြမယ်";
     document.getElementById("heroText").textContent =
-      profile.heroText || profile.summary || "Admin control room ထဲက Club Profile section မှာ official အသင်းအချက်အလက်တွေ ထည့်ပြီး ဒီနေရာကို ဖြည့်နိုင်ပါတယ်။";
-    document.getElementById("clubNameHeading").textContent = profile.title || "အသင်းနာမည် မထည့်ရသေးပါ";
+      profile.heroText ||
+      profile.summary ||
+      "Admin control room ထဲက Club Profile section မှာ official အသင်းအချက်အလက်တွေ ထည့်ပြီး ဒီနေရာကို ဖြည့်နိုင်ပါတယ်။";
+    document.getElementById("clubNameHeading").textContent =
+      profile.title || "အသင်းနာမည် မထည့်ရသေးပါ";
     document.getElementById("clubSummary").textContent =
-      profile.body || profile.summary || "အသင်းအကြောင်းအရာ၊ ရည်ရွယ်ချက်၊ ဆက်သွယ်ရန်နဲ့ social link တွေကို admin မှာထည့်လိုက်ရင် ဒီစာသားနေရာမှာ တကယ့် content ကို ပြသပါမယ်။";
-    document.getElementById("foundedYear").textContent = profile.foundedYear || "-";
+      profile.body ||
+      profile.summary ||
+      "အသင်းအကြောင်းအရာ၊ ရည်ရွယ်ချက်၊ ဆက်သွယ်ရန်နဲ့ social link တွေကို admin မှာထည့်လိုက်ရင် ဒီစာသားနေရာမှာ တကယ့် content ကို ပြသပါမယ်။";
+    document.getElementById("foundedYear").textContent =
+      profile.foundedYear || "-";
     document.getElementById("clubCity").textContent = profile.city || "-";
     document.getElementById("clubGround").textContent = profile.ground || "-";
-    document.getElementById("clubMotto").textContent = profile.motto || "ဆောင်ပုဒ် မထည့်ရသေးပါ";
+    document.getElementById("clubMotto").textContent =
+      profile.motto || "ဆောင်ပုဒ် မထည့်ရသေးပါ";
 
     const email = document.getElementById("contactEmail");
     const phone = document.getElementById("contactPhone");
@@ -191,7 +265,13 @@
     socialLinks.innerHTML = socials.length
       ? socials
           .map(function (item) {
-            return '<a href="' + helpers.escapeHtml(item.url) + '" target="_blank" rel="noreferrer">' + helpers.escapeHtml(item.label) + "</a>";
+            return (
+              '<a href="' +
+              helpers.escapeHtml(item.url) +
+              '" target="_blank" rel="noreferrer">' +
+              helpers.escapeHtml(item.label) +
+              "</a>"
+            );
           })
           .join("")
       : '<span class="empty-inline">Social link မထည့်ရသေးပါ</span>';
@@ -201,29 +281,44 @@
     const container = document.getElementById("nextMatchCard");
     const nextMatch = fixtures[0];
     if (!nextMatch) {
-      container.innerHTML = createEmptyState("ပွဲစဉ်မရှိသေးပါ။ စီမံခန့်ခွဲမှုစာမျက်နှာကနေ ပွဲစဉ်အသစ် ထည့်နိုင်ပါတယ်။");
+      container.innerHTML = createEmptyState(
+        "ပွဲစဉ်မရှိသေးပါ။ စီမံခန့်ခွဲမှုစာမျက်နှာကနေ ပွဲစဉ်အသစ် ထည့်နိုင်ပါတယ်။",
+      );
       return;
     }
 
     container.innerHTML = [
-      "<h3>" + helpers.escapeHtml(nextMatch.opponent || nextMatch.title) + "</h3>",
-      '<div class="meta-line">' + helpers.escapeHtml(buildMeta(nextMatch)) + "</div>",
+      "<h3>" +
+        helpers.escapeHtml(nextMatch.opponent || nextMatch.title) +
+        "</h3>",
+      '<div class="meta-line">' +
+        helpers.escapeHtml(buildMeta(nextMatch)) +
+        "</div>",
       "<p>" + helpers.escapeHtml(nextMatch.summary || "") + "</p>",
-      '<a class="text-link" href="' + detailUrl("fixtures", nextMatch) + '">ပွဲအသေးစိတ်</a>',
+      '<a class="text-link" href="' +
+        detailUrl("fixtures", nextMatch) +
+        '">ပွဲအသေးစိတ်</a>',
     ].join("");
   }
 
   function renderTicker(announcements) {
     const container = document.getElementById("announcementTicker");
     if (!announcements.length) {
-      container.innerHTML = '<div class="ticker-pill">စီမံခန့်ခွဲမှုစာမျက်နှာကနေ အသင်းသတင်းများ ထည့်နိုင်ပါတယ်။</div>';
+      container.innerHTML =
+        '<div class="ticker-pill">စီမံခန့်ခွဲမှုစာမျက်နှာကနေ အသင်းသတင်းများ ထည့်နိုင်ပါတယ်။</div>';
       return;
     }
 
     container.innerHTML = announcements
       .slice(0, 4)
       .map(function (item) {
-        return '<a class="ticker-pill" href="' + detailUrl("announcements", item) + '">' + helpers.escapeHtml(item.title) + "</a>";
+        return (
+          '<a class="ticker-pill" href="' +
+          detailUrl("announcements", item) +
+          '">' +
+          helpers.escapeHtml(item.title) +
+          "</a>"
+        );
       })
       .join("");
   }
@@ -241,7 +336,9 @@
   function createLoadingBlock(label) {
     return [
       '<div class="loading-card" aria-hidden="true">',
-      '<span class="loading-chip">' + helpers.escapeHtml(label || "တင်နေပါတယ်") + "</span>",
+      '<span class="loading-chip">' +
+        helpers.escapeHtml(label || "တင်နေပါတယ်") +
+        "</span>",
       '<div class="loading-line loading-line-title"></div>',
       '<div class="loading-line"></div>',
       '<div class="loading-line loading-line-short"></div>',
@@ -250,10 +347,14 @@
   }
 
   function renderLoadingState() {
-    document.getElementById("heroTitle").textContent = "အချက်အလက်များကို ရယူနေပါတယ်...";
-    document.getElementById("heroText").textContent = "Google Drive နဲ့ ချိတ်ထားတဲ့ club data တွေကို ဆွဲယူနေပါတယ်။";
-    document.getElementById("clubNameHeading").textContent = "Club profile ကို ပြင်ဆင်နေပါတယ်...";
-    document.getElementById("clubSummary").textContent = "ပေါ်လာမယ့် အချက်အလက်များကို စနစ်က ပြင်ဆင်နေပါတယ်။";
+    document.getElementById("heroTitle").textContent =
+      "အချက်အလက်များကို ရယူနေပါတယ်...";
+    document.getElementById("heroText").textContent =
+      "Google Drive နဲ့ ချိတ်ထားတဲ့ club data တွေကို ဆွဲယူနေပါတယ်။";
+    document.getElementById("clubNameHeading").textContent =
+      "Club profile ကို ပြင်ဆင်နေပါတယ်...";
+    document.getElementById("clubSummary").textContent =
+      "ပေါ်လာမယ့် အချက်အလက်များကို စနစ်က ပြင်ဆင်နေပါတယ်။";
     document.getElementById("foundedYear").textContent = "...";
     document.getElementById("clubCity").textContent = "...";
     document.getElementById("clubGround").textContent = "...";
@@ -262,21 +363,38 @@
     document.getElementById("contactEmail").removeAttribute("href");
     document.getElementById("contactPhone").textContent = "တင်နေပါတယ်...";
     document.getElementById("contactPhone").removeAttribute("href");
-    document.getElementById("socialLinks").innerHTML = '<span class="loading-inline">Social link များကို ရယူနေပါတယ်...</span>';
-    document.getElementById("nextMatchCard").innerHTML = createLoadingBlock("နောက်လာမယ့်ပွဲ");
-    document.getElementById("announcementTicker").innerHTML = '<div class="loading-inline">သတင်းနဲ့ update များကို ရယူနေပါတယ်...</div>';
-    document.getElementById("fixturesGrid").innerHTML = createLoadingBlock("ပွဲစဉ်") + createLoadingBlock("ပွဲစဉ်") + createLoadingBlock("ပွဲစဉ်");
-    document.getElementById("resultsGrid").innerHTML = createLoadingBlock("ရလဒ်") + createLoadingBlock("ရလဒ်") + createLoadingBlock("ရလဒ်");
-    document.getElementById("highlightsGrid").innerHTML = createLoadingBlock("ထင်ရှားသတင်း") + createLoadingBlock("ထင်ရှားသတင်း") + createLoadingBlock("ထင်ရှားသတင်း");
-    document.getElementById("mediaGrid").innerHTML = createLoadingBlock("မီဒီယာ") + createLoadingBlock("မီဒီယာ") + createLoadingBlock("မီဒီယာ");
+    document.getElementById("socialLinks").innerHTML =
+      '<span class="loading-inline">Social link များကို ရယူနေပါတယ်...</span>';
+    document.getElementById("nextMatchCard").innerHTML =
+      createLoadingBlock("နောက်လာမယ့်ပွဲ");
+    document.getElementById("announcementTicker").innerHTML =
+      '<div class="loading-inline">သတင်းနဲ့ update များကို ရယူနေပါတယ်...</div>';
+    document.getElementById("fixturesGrid").innerHTML =
+      createLoadingBlock("ပွဲစဉ်") +
+      createLoadingBlock("ပွဲစဉ်") +
+      createLoadingBlock("ပွဲစဉ်");
+    document.getElementById("resultsGrid").innerHTML =
+      createLoadingBlock("ရလဒ်") +
+      createLoadingBlock("ရလဒ်") +
+      createLoadingBlock("ရလဒ်");
+    document.getElementById("highlightsGrid").innerHTML =
+      createLoadingBlock("ထင်ရှားသတင်း") +
+      createLoadingBlock("ထင်ရှားသတင်း") +
+      createLoadingBlock("ထင်ရှားသတင်း");
+    document.getElementById("mediaGrid").innerHTML =
+      createLoadingBlock("မီဒီယာ") +
+      createLoadingBlock("မီဒီယာ") +
+      createLoadingBlock("မီဒီယာ");
   }
 
   function recordsForCollection(data, collection) {
     return helpers.sortRecords(
-      (data && Array.isArray(data.records) ? data.records : []).filter(function (item) {
-        return item.collection === collection;
-      }),
-      collection
+      (data && Array.isArray(data.records) ? data.records : []).filter(
+        function (item) {
+          return item.collection === collection;
+        },
+      ),
+      collection,
     );
   }
 
@@ -293,21 +411,45 @@
     renderProfile(profile);
     renderNextMatch(fixtures);
     renderTicker(announcements);
-    renderGrid("fixturesGrid", fixtures.slice(0, 3), function (record) {
-      return createMatchCard("fixtures", record);
-    }, "ပွဲစဉ် မရှိသေးပါ။");
-    renderGrid("resultsGrid", results.slice(0, 3), function (record) {
-      return createMatchCard("results", record);
-    }, "ရလဒ် မရှိသေးပါ။");
-    renderGrid("highlightsGrid", highlights.slice(0, 3), createFeatureCard, "Highlight မရှိသေးပါ။");
-    renderGrid("mediaGrid", media.slice(0, 3), createMediaCard, "မီဒီယာ record မရှိသေးပါ။");
+    renderGrid(
+      "fixturesGrid",
+      fixtures.slice(0, 3),
+      function (record) {
+        return createMatchCard("fixtures", record);
+      },
+      "ပွဲစဉ် မရှိသေးပါ။",
+    );
+    renderGrid(
+      "resultsGrid",
+      results.slice(0, 3),
+      function (record) {
+        return createMatchCard("results", record);
+      },
+      "ရလဒ် မရှိသေးပါ။",
+    );
+    renderGrid(
+      "highlightsGrid",
+      highlights.slice(0, 3),
+      createFeatureCard,
+      "Highlight မရှိသေးပါ။",
+    );
+    renderGrid(
+      "mediaGrid",
+      media.slice(0, 3),
+      createMediaCard,
+      "မီဒီယာ record မရှိသေးပါ။",
+    );
   }
 
   async function init() {
     renderLoadingState();
 
     const cachedData = store.getCachedData("site");
-    if (cachedData && Array.isArray(cachedData.records) && cachedData.records.length) {
+    if (
+      cachedData &&
+      Array.isArray(cachedData.records) &&
+      cachedData.records.length
+    ) {
       renderSnapshot(Object.assign({ _source: "cache" }, cachedData));
     }
 
