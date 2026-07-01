@@ -166,14 +166,15 @@
       helpers.escapeHtml(assetPreviewLabel(asset)) +
       "</span></div>";
 
-    if (asset.kind === "image" && asset.previewUrl) {
-      let srcUrl = convertDriveUrl(asset.previewUrl || asset.fileUrl || "");
-      previewHtml =
-        '<img src="' +
+    if (asset.kind === "image" && (asset.previewUrl || record.fileUrl)) {
+      let srcUrl = convertDriveUrl(asset.previewUrl || record.fileUrl || "");
+
+      preview =
+        '<div class="media-preview"><img src="' +
         helpers.escapeHtml(srcUrl) +
         '" alt="' +
-        helpers.escapeHtml(record.title || "") +
-        '">';
+        helpers.escapeHtml(record.title) +
+        '"></div>';
     }
 
     return [
