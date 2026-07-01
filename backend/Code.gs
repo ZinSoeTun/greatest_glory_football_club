@@ -428,50 +428,66 @@ function buildRecord_(collection, draft, existing) {
 }
 
 function saveFile_(filePayload, previousFileId) {
-  if (previousFileId) {
-    try {
-      DriveApp.getFileById(previousFileId).setTrashed(true);
-    } catch (error) {
-      Logger.log("Previous file could not be removed: " + error.message);
+    if (previousFileId) {
+      try {
+        DriveApp.getFileById(previousFileId).setTrashed(true);
+      } catch (error) {
+        Logger.log("Previous file could not be removed: " + error.message); 
+      }
     }
-  }
 
-  const mediaFolder = getMediaFolder_();
+  const mediaFolder = getMediaFolder_(); 
   const bytes = Utilities.base64Decode(filePayload.base64 || "");
   const blob = Utilities.newBlob(bytes, filePayload.mimeType || MimeType.PLAIN_TEXT, filePayload.name || "asset");
   const file = mediaFolder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
+  const fileId = file.getId();
+  const mediaType = inferMediaType_(filePayload.mimeType); 
+  
+  let previewUrl = file.getUrl();
+  if (mediaType === "image") {
+    previewUrl = "http://googleusercontent.com/profile/picture/4" + fileId;
+  }
+
   return {
-    fileId: file.getId(),
+    fileId: fileId,
     fileUrl: file.getUrl(),
+    previewUrl: previewUrl, 
     fileName: file.getName(),
-    mediaType: inferMediaType_(filePayload.mimeType),
+    mediaType: mediaType, 
   };
 }
 
 function upsertRecord_(collection, draft, filePayload, previousFileId) {
   if (!collection) {
-    throw new Error("Collection is required.");
+    throw new Error("Collection is required."); 
   }
 
   const records = getRecords_();
   const index = records.findIndex(function (item) {
     return item.id === draft.id;
   });
-  const existing = index > -1 ? records[index] : {};
+  const existing = index > -1 ? records[index] : {}; 
   const next = buildRecord_(collection, draft, existing);
 
   if (filePayload && filePayload.base64) {
     const savedFile = saveFile_(filePayload, previousFileId || existing.fileId);
-    next.fileId = savedFile.fileId;
+    next.fileId = savedFile.fileId; 
     next.fileUrl = savedFile.fileUrl;
+    next.previewUrl = savedFile.previewUrl;
     next.fileName = savedFile.fileName;
-    next.mediaType = next.mediaType || savedFile.mediaType;
+    next.mediaType = next.mediaType || savedFile.mediaType; 
+  } else {
+    if (existing.fileId && (next.mediaType === "image" || (!next.mediaType && inferMediaType_(existing.mimeType) === "image"))) {
+      next.previewUrl = "http://googleusercontent.com/profile/picture/5" + existing.fileId;
+    } else {
+      next.previewUrl = existing.previewUrl || next.fileUrl || "";
+    }
   }
 
   let nextRecords = records.slice();
-  if (collection === "profile") {
+  if (collection === "profile") { 
     nextRecords = nextRecords.filter(function (item) {
       return item.collection !== "profile";
     });
@@ -482,8 +498,8 @@ function upsertRecord_(collection, draft, filePayload, previousFileId) {
     nextRecords.push(next);
   }
 
-  writeRecords_(nextRecords);
-  return {
+  writeRecords_(nextRecords); 
+  return { 
     records: nextRecords,
     record: next,
   };
