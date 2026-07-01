@@ -278,28 +278,10 @@
 
     let previewHtml = '<div class="detail-empty">Preview မရသေးပါ။</div>';
     if (asset.kind === "image") {
-      let finalUrl = asset.previewUrl || "";
-
-      if (
-        finalUrl.includes("drive.google.com") ||
-        finalUrl.includes("docs.google.com")
-      ) {
-        let fileId = "";
-
-        if (finalUrl.includes("/file/d/")) {
-          fileId = finalUrl.split("/file/d/")[1].split("/")[0];
-        } else if (finalUrl.includes("id=")) {
-          const match = finalUrl.match(/id=([a-zA-Z0-9_-]+)/);
-          if (match) fileId = match[1];
-        }
-        if (fileId) {
-          finalUrl = "http://googleusercontent.com/profile/picture/6" + fileId;
-        }
-      }
-
+      let srcUrl = convertDriveUrl(asset.previewUrl || asset.fileUrl || "");
       previewHtml =
         '<img src="' +
-        helpers.escapeHtml(finalUrl) +
+        helpers.escapeHtml(srcUrl) +
         '" alt="' +
         helpers.escapeHtml(record.title || "") +
         '">';
@@ -482,6 +464,30 @@
       ),
       collectionName,
     );
+  }
+
+  function convertDriveUrl(url) {
+    if (!url || typeof url !== "string") return url;
+    let finalUrl = url.trim();
+
+    if (
+      finalUrl.includes("drive.google.com") ||
+      finalUrl.includes("docs.google.com")
+    ) {
+      let fileId = "";
+
+      if (finalUrl.includes("/file/d/")) {
+        fileId = finalUrl.split("/file/d/")[1].split("/")[0];
+      } else if (finalUrl.includes("id=")) {
+        const match = finalUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) fileId = match[1];
+      }
+
+      if (fileId) {
+        return "http://googleusercontent.com/profile/picture/7" + fileId;
+      }
+    }
+    return finalUrl;
   }
 
   function renderSnapshot(data) {
